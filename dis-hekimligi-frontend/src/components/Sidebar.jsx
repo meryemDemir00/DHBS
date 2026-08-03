@@ -12,7 +12,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 h-screen bg-blue-700 text-white flex flex-col p-4">
+    <aside className="w-64 h-screen bg-teal-700 text-white flex flex-col p-4">
       <h1 className="text-xl font-bold mb-8">Diş Kliniği</h1>
       <nav className="flex flex-col gap-2">
         {menuItems.map((item) => (
@@ -22,7 +22,7 @@ export default function Sidebar() {
             end={item.path === "/"}
             className={({ isActive }) =>
               `px-3 py-2 rounded-lg transition ${
-                isActive ? "bg-blue-800" : "hover:bg-blue-600"
+                isActive ? "bg-teal-900" : "hover:bg-teal-600"
               }`
             }
           >

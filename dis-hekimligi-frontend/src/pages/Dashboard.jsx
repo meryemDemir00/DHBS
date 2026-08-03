@@ -21,10 +21,10 @@ export default function Dashboard() {
     <div>
       <h2 className="text-2xl font-semibold mb-6">Genel Bakış</h2>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card title="Bugünkü Randevu" value={istatistik.bugunkuRandevu} color="border-blue-500" />
-        <Card title="Aktif Tedavi" value={istatistik.aktifTedavi} color="border-green-500" />
-        <Card title="Kritik Stok" value={istatistik.kritikStok} color="border-red-500" />
-        <Card title="Toplam Hasta" value={istatistik.toplamHasta} color="border-yellow-500" />
+        <Card title="Bugünkü Randevu" value={istatistik.bugunkuRandevu} color="border-cyan-500" />
+<Card title="Aktif Tedavi" value={istatistik.aktifTedavi} color="border-teal-500" />
+<Card title="Kritik Stok" value={istatistik.kritikStok} color="border-red-500" />
+<Card title="Toplam Hasta" value={istatistik.toplamHasta} color="border-sky-500" />
       </div>
       <RandevuTablosu />
     </div>

@@ -7,6 +7,7 @@ import Randevular from "./pages/Randevular";
 import Tedaviler from "./pages/Tedaviler";
 import Stok from "./pages/Stok";
 import Receteler from "./pages/Receteler";
+import HastaGecmis from "./pages/HastaGecmis";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/tedaviler" element={<Tedaviler />} />
             <Route path="/stok" element={<Stok />} />
             <Route path="/receteler" element={<Receteler />} />
+            <Route path="/hastalar/:id/gecmis" element={<HastaGecmis />} /><Route path="/hastalar/:id/gecmis" element={<HastaGecmis />} />
           </Routes>
         </main>
       </div>
