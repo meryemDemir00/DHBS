@@ -4,12 +4,26 @@ export default function RandevuTablosu() {
   const [randevular, setRandevular] = useState([]);
   const [filtre, setFiltre] = useState("Hepsi");
 
-  useEffect(() => {
+  const getir = () => {
     fetch("http://localhost:5000/api/randevular")
       .then((res) => res.json())
       .then((data) => setRandevular(data))
       .catch((err) => console.error("Randevular alınamadı:", err));
+  };
+
+  useEffect(() => {
+    getir();
   }, []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bu randevuyu silmek istediğinizden emin misiniz?")) return;
+    const res = await fetch(`http://localhost:5000/api/randevular/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      getir();
+    } else {
+      alert(await res.text());
+    }
+  };
 
   const durumRengi = {
     Bekliyor: "bg-yellow-100 text-yellow-700",
@@ -21,7 +35,7 @@ export default function RandevuTablosu() {
     { ad: "Hepsi", durum: null },
     { ad: "Bekliyor", durum: "Bekliyor" },
     { ad: "Tamamlandı", durum: "Tamamlandi" },
-    { ad: "İptal", durum: "IptalEdildi" },
+    { ad: "İptal", durum: "Iptal Edildi" },
   ];
 
   const sayac = (durum) => {
@@ -52,11 +66,7 @@ export default function RandevuTablosu() {
         {sekmeler.map((s) => {
           const secili = (s.durum || "Hepsi") === filtre;
           return (
-            <button
-              key={s.ad}
-              onClick={() => setFiltre(s.durum || "Hepsi")}
-              className={sekmeSinifi(secili)}
-            >
+            <button key={s.ad} onClick={() => setFiltre(s.durum || "Hepsi")} className={sekmeSinifi(secili)}>
               {s.ad}
               <span className={rozetSinifi(secili)}>{sayac(s.durum)}</span>
             </button>
@@ -71,6 +81,7 @@ export default function RandevuTablosu() {
             <th className="p-3">Hekim</th>
             <th className="p-3">Tarih</th>
             <th className="p-3">Durum</th>
+            <th className="p-3"></th>
           </tr>
         </thead>
         <tbody>
@@ -83,6 +94,11 @@ export default function RandevuTablosu() {
                 <span className={`px-2 py-1 rounded-full text-xs ${durumRengi[r.Durum] || ""}`}>
                   {r.Durum}
                 </span>
+              </td>
+              <td className="p-3">
+                <button onClick={() => handleDelete(r.RandevuID)} className="text-red-600 text-sm hover:underline">
+                  Sil
+                </button>
               </td>
             </tr>
           ))}

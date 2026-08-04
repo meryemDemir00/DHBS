@@ -32,6 +32,7 @@ export default function Hastalar() {
   const [form, setForm] = useState({ Ad: "", Soyad: "", Telefon: "", DogumTarihi: "" });
   const [mesaj, setMesaj] = useState("");
   const [arama, setArama] = useState("");
+  const [duzenlenenId, setDuzenlenenId] = useState(null);
 
   const hastalariGetir = () => {
     fetch("http://localhost:5000/api/hastalar")
@@ -48,17 +49,37 @@ export default function Hastalar() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const formuTemizle = () => {
+    setForm({ Ad: "", Soyad: "", Telefon: "", DogumTarihi: "" });
+    setDuzenlenenId(null);
+  };
+
+  const handleDuzenle = (h) => {
+    setDuzenlenenId(h.HastaID);
+    setForm({
+      Ad: h.Ad,
+      Soyad: h.Soyad,
+      Telefon: h.Telefon || "",
+      DogumTarihi: h.DogumTarihi ? h.DogumTarihi.split("T")[0] : "",
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://localhost:5000/api/hastalar", {
-        method: "POST",
+      const url = duzenlenenId
+        ? `http://localhost:5000/api/hastalar/${duzenlenenId}`
+        : "http://localhost:5000/api/hastalar";
+      const method = duzenlenenId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       if (res.ok) {
-        setMesaj("Hasta başarıyla eklendi.");
-        setForm({ Ad: "", Soyad: "", Telefon: "", DogumTarihi: "" });
+        setMesaj(duzenlenenId ? "Hasta güncellendi." : "Hasta başarıyla eklendi.");
+        formuTemizle();
         hastalariGetir();
       } else {
         setMesaj("Bir hata oluştu.");
@@ -75,8 +96,7 @@ export default function Hastalar() {
       if (res.ok) {
         hastalariGetir();
       } else {
-        const hata = await res.text();
-        alert(hata);
+        alert(await res.text());
       }
     } catch (err) {
       alert("Bağlantı hatası: " + err.message);
@@ -113,9 +133,16 @@ export default function Hastalar() {
           <label className="text-sm text-gray-500">Doğum Tarihi</label>
           <input type="date" name="DogumTarihi" value={form.DogumTarihi} onChange={handleChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
         </div>
-        <button type="submit" className="bg-teal-700 text-white rounded-lg px-4 py-2 hover:bg-teal-800 transition">
-          Ekle
-        </button>
+        <div className="flex gap-2">
+          <button type="submit" className="bg-teal-700 text-white rounded-lg px-4 py-2 hover:bg-teal-800 transition">
+            {duzenlenenId ? "Güncelle" : "Ekle"}
+          </button>
+          {duzenlenenId && (
+            <button type="button" onClick={formuTemizle} className="bg-gray-200 text-gray-700 rounded-lg px-4 py-2 hover:bg-gray-300 transition">
+              İptal
+            </button>
+          )}
+        </div>
       </form>
 
       {mesaj && <p className="text-sm text-green-600 mb-4">{mesaj}</p>}
@@ -138,6 +165,7 @@ export default function Hastalar() {
               <th className="p-3">Yaş</th>
               <th className="p-3"></th>
               <th className="p-3"></th>
+              <th className="p-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -153,6 +181,11 @@ export default function Hastalar() {
                   <Link to={`/hastalar/${h.HastaID}/gecmis`} className="text-teal-700 text-sm hover:underline">
                     Geçmiş →
                   </Link>
+                </td>
+                <td className="p-3">
+                  <button onClick={() => handleDuzenle(h)} className="text-blue-600 text-sm hover:underline">
+                    Düzenle
+                  </button>
                 </td>
                 <td className="p-3">
                   <button onClick={() => handleDelete(h.HastaID)} className="text-red-600 text-sm hover:underline">

@@ -23,8 +23,17 @@ export default function Hekimler() {
       setForm({ Ad: "", Soyad: "", Uzmanlik: "" });
       getir();
     } else {
-      const hata = await res.text();
-      setMesaj(hata);
+      setMesaj(await res.text());
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bu hekimi silmek istediğinizden emin misiniz?")) return;
+    const res = await fetch(`http://localhost:5000/api/hekimler/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      getir();
+    } else {
+      alert(await res.text());
     }
   };
 
@@ -52,13 +61,18 @@ export default function Hekimler() {
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-50 text-gray-500 text-sm">
-            <tr><th className="p-3">Ad Soyad</th><th className="p-3">Uzmanlık</th></tr>
+            <tr><th className="p-3">Ad Soyad</th><th className="p-3">Uzmanlık</th><th className="p-3"></th></tr>
           </thead>
           <tbody>
             {hekimler.map(h => (
               <tr key={h.HekimID} className="border-t">
                 <td className="p-3">{h.Ad} {h.Soyad}</td>
                 <td className="p-3">{h.Uzmanlik}</td>
+                <td className="p-3">
+                  <button onClick={() => handleDelete(h.HekimID)} className="text-red-600 text-sm hover:underline">
+                    Sil
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

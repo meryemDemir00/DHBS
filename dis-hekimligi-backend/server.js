@@ -329,6 +329,56 @@ app.get("/api/istatistikler", async (req, res) => {
   }
 });
 
+// ---------- GÜNCELLEME İŞLEMLERİ ----------
+app.put("/api/hastalar/:id", async (req, res) => {
+  try {
+    const { Ad, Soyad, Telefon, DogumTarihi } = req.body;
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("id", sql.Int, req.params.id)
+      .input("Ad", sql.NVarChar, Ad)
+      .input("Soyad", sql.NVarChar, Soyad)
+      .input("Telefon", sql.NVarChar, Telefon)
+      .input("DogumTarihi", sql.Date, DogumTarihi)
+      .query("UPDATE Hasta SET Ad=@Ad, Soyad=@Soyad, Telefon=@Telefon, DogumTarihi=@DogumTarihi WHERE HastaID=@id");
+    res.send("Hasta güncellendi");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
+
+app.put("/api/hekimler/:id", async (req, res) => {
+  try {
+    const { Ad, Soyad, Uzmanlik } = req.body;
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("id", sql.Int, req.params.id)
+      .input("Ad", sql.NVarChar, Ad)
+      .input("Soyad", sql.NVarChar, Soyad)
+      .input("Uzmanlik", sql.NVarChar, Uzmanlik)
+      .query("UPDATE Hekim SET Ad=@Ad, Soyad=@Soyad, Uzmanlik=@Uzmanlik WHERE HekimID=@id");
+    res.send("Hekim güncellendi");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
+
+app.put("/api/malzemeler/:id", async (req, res) => {
+  try {
+    const { MalzemeAdi, Miktar, KritikSeviye } = req.body;
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("id", sql.Int, req.params.id)
+      .input("MalzemeAdi", sql.NVarChar, MalzemeAdi)
+      .input("Miktar", sql.Int, Miktar)
+      .input("KritikSeviye", sql.Int, KritikSeviye)
+      .query("UPDATE Malzeme SET MalzemeAdi=@MalzemeAdi, Miktar=@Miktar, KritikSeviye=@KritikSeviye WHERE MalzemeID=@id");
+    res.send("Malzeme güncellendi");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
+
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`Sunucu http://localhost:${PORT} adresinde çalışıyor`);
