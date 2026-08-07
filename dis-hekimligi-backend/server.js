@@ -32,14 +32,17 @@ app.get("/api/hastalar", async (req, res) => {
 
 app.post("/api/hastalar", async (req, res) => {
   try {
-    const { Ad, Soyad, Telefon, DogumTarihi } = req.body;
+    const { Ad, Soyad, Telefon, DogumTarihi, Boy, Kilo, KronikRahatsizlik } = req.body;
     const pool = await sql.connect(dbConfig);
     await pool.request()
       .input("Ad", sql.NVarChar, Ad)
       .input("Soyad", sql.NVarChar, Soyad)
       .input("Telefon", sql.NVarChar, Telefon)
       .input("DogumTarihi", sql.Date, DogumTarihi)
-      .query("INSERT INTO Hasta (Ad, Soyad, Telefon, DogumTarihi) VALUES (@Ad, @Soyad, @Telefon, @DogumTarihi)");
+      .input("Boy", sql.Int, Boy || null)
+      .input("Kilo", sql.Decimal(5, 2), Kilo || null)
+      .input("KronikRahatsizlik", sql.NVarChar, KronikRahatsizlik || null)
+      .query("INSERT INTO Hasta (Ad, Soyad, Telefon, DogumTarihi, Boy, Kilo, KronikRahatsizlik) VALUES (@Ad, @Soyad, @Telefon, @DogumTarihi, @Boy, @Kilo, @KronikRahatsizlik)");
     res.status(201).send("Hasta eklendi");
   } catch (err) {
     res.status(500).send("Hata: " + err.message);
@@ -129,7 +132,7 @@ app.get("/api/randevular", async (req, res) => {
   try {
     const pool = await sql.connect(dbConfig);
     const result = await pool.request().query(`
-      SELECT R.RandevuID, H.Ad + ' ' + H.Soyad AS Hasta, HK.Ad + ' ' + HK.Soyad AS Hekim, R.Tarih, R.Durum
+      SELECT R.RandevuID, R.HastaID, R.HekimID, H.Ad + ' ' + H.Soyad AS Hasta, HK.Ad + ' ' + HK.Soyad AS Hekim, R.Tarih, R.Durum
       FROM Randevu R
       JOIN Hasta H ON R.HastaID = H.HastaID
       JOIN Hekim HK ON R.HekimID = HK.HekimID
@@ -140,10 +143,25 @@ app.get("/api/randevular", async (req, res) => {
   }
 });
 
+//--randevu çakışma kontrolü--
 app.post("/api/randevular", async (req, res) => {
   try {
     const { HastaID, HekimID, Tarih } = req.body;
     const pool = await sql.connect(dbConfig);
+
+    const kontrol = await pool.request()
+      .input("HekimID", sql.Int, HekimID)
+      .input("Tarih", sql.DateTime, Tarih)
+      .query(`
+        SELECT COUNT(*) AS adet FROM Randevu
+        WHERE HekimID = @HekimID AND Tarih = @Tarih
+        AND Durum NOT IN ('Reddedildi', 'IptalEdildi')
+      `);
+
+    if (kontrol.recordset[0].adet > 0) {
+      return res.status(409).send("Bu hekim için seçilen tarih ve saatte zaten bir randevu var. Lütfen farklı bir saat seçin.");
+    }
+
     await pool.request()
       .input("HastaID", sql.Int, HastaID)
       .input("HekimID", sql.Int, HekimID)
@@ -332,7 +350,7 @@ app.get("/api/istatistikler", async (req, res) => {
 // ---------- GÜNCELLEME İŞLEMLERİ ----------
 app.put("/api/hastalar/:id", async (req, res) => {
   try {
-    const { Ad, Soyad, Telefon, DogumTarihi } = req.body;
+    const { Ad, Soyad, Telefon, DogumTarihi, Boy, Kilo, KronikRahatsizlik } = req.body;
     const pool = await sql.connect(dbConfig);
     await pool.request()
       .input("id", sql.Int, req.params.id)
@@ -340,7 +358,10 @@ app.put("/api/hastalar/:id", async (req, res) => {
       .input("Soyad", sql.NVarChar, Soyad)
       .input("Telefon", sql.NVarChar, Telefon)
       .input("DogumTarihi", sql.Date, DogumTarihi)
-      .query("UPDATE Hasta SET Ad=@Ad, Soyad=@Soyad, Telefon=@Telefon, DogumTarihi=@DogumTarihi WHERE HastaID=@id");
+      .input("Boy", sql.Int, Boy || null)
+      .input("Kilo", sql.Decimal(5, 2), Kilo || null)
+      .input("KronikRahatsizlik", sql.NVarChar, KronikRahatsizlik || null)
+      .query("UPDATE Hasta SET Ad=@Ad, Soyad=@Soyad, Telefon=@Telefon, DogumTarihi=@DogumTarihi, Boy=@Boy, Kilo=@Kilo, KronikRahatsizlik=@KronikRahatsizlik WHERE HastaID=@id");
     res.send("Hasta güncellendi");
   } catch (err) {
     res.status(500).send("Hata: " + err.message);
@@ -374,6 +395,78 @@ app.put("/api/malzemeler/:id", async (req, res) => {
       .input("KritikSeviye", sql.Int, KritikSeviye)
       .query("UPDATE Malzeme SET MalzemeAdi=@MalzemeAdi, Miktar=@Miktar, KritikSeviye=@KritikSeviye WHERE MalzemeID=@id");
     res.send("Malzeme güncellendi");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
+
+app.put("/api/randevular/:id", async (req, res) => {
+  try {
+    const { HastaID, HekimID, Tarih, Durum } = req.body;
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("id", sql.Int, req.params.id)
+      .input("HastaID", sql.Int, HastaID)
+      .input("HekimID", sql.Int, HekimID)
+      .input("Tarih", sql.DateTime, Tarih)
+      .input("Durum", sql.NVarChar, Durum)
+      .query("UPDATE Randevu SET HastaID=@HastaID, HekimID=@HekimID, Tarih=@Tarih, Durum=@Durum WHERE RandevuID=@id");
+    res.send("Randevu güncellendi");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
+
+app.put("/api/tedaviler/:id", async (req, res) => {
+  try {
+    const { HastaID, HekimID, DisNumarasi, TedaviTuru, Durum } = req.body;
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("id", sql.Int, req.params.id)
+      .input("HastaID", sql.Int, HastaID)
+      .input("HekimID", sql.Int, HekimID)
+      .input("DisNumarasi", sql.Int, DisNumarasi)
+      .input("TedaviTuru", sql.NVarChar, TedaviTuru)
+      .input("Durum", sql.NVarChar, Durum)
+      .query("UPDATE Tedavi SET HastaID=@HastaID, HekimID=@HekimID, DisNumarasi=@DisNumarasi, TedaviTuru=@TedaviTuru, Durum=@Durum WHERE TedaviID=@id");
+    res.send("Tedavi güncellendi");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
+
+app.put("/api/receteler/:id", async (req, res) => {
+  try {
+    const { HastaID, HekimID, IlacAdi, Doz } = req.body;
+    const pool = await sql.connect(dbConfig);
+    await pool.request()
+      .input("id", sql.Int, req.params.id)
+      .input("HastaID", sql.Int, HastaID)
+      .input("HekimID", sql.Int, HekimID)
+      .input("IlacAdi", sql.NVarChar, IlacAdi)
+      .input("Doz", sql.NVarChar, Doz)
+      .query("UPDATE Recete SET HastaID=@HastaID, HekimID=@HekimID, IlacAdi=@IlacAdi, Doz=@Doz WHERE ReceteID=@id");
+    res.send("Reçete güncellendi");
+  } catch (err) {
+    res.status(500).send("Hata: " + err.message);
+  }
+});
+
+// ---------- GİRİŞ ----------
+app.post("/api/login", async (req, res) => {
+  try {
+    const { KullaniciAdi, Sifre } = req.body;
+    const pool = await sql.connect(dbConfig);
+    const result = await pool.request()
+      .input("KullaniciAdi", sql.NVarChar, KullaniciAdi)
+      .input("Sifre", sql.NVarChar, Sifre)
+      .query("SELECT * FROM Kullanici WHERE KullaniciAdi = @KullaniciAdi AND Sifre = @Sifre");
+
+    if (result.recordset.length > 0) {
+      res.json({ basarili: true, kullanici: result.recordset[0] });
+    } else {
+      res.status(401).json({ basarili: false, mesaj: "Kullanıcı adı veya şifre hatalı." });
+    }
   } catch (err) {
     res.status(500).send("Hata: " + err.message);
   }

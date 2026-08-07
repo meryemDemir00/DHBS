@@ -27,9 +27,11 @@ function tarihFormatla(tarih) {
   return `${gun}.${ay}.${yil}`;
 }
 
+const bosForm = { Ad: "", Soyad: "", Telefon: "", DogumTarihi: "", Boy: "", Kilo: "", KronikRahatsizlik: "" };
+
 export default function Hastalar() {
   const [hastalar, setHastalar] = useState([]);
-  const [form, setForm] = useState({ Ad: "", Soyad: "", Telefon: "", DogumTarihi: "" });
+  const [form, setForm] = useState(bosForm);
   const [mesaj, setMesaj] = useState("");
   const [arama, setArama] = useState("");
   const [duzenlenenId, setDuzenlenenId] = useState(null);
@@ -50,7 +52,7 @@ export default function Hastalar() {
   };
 
   const formuTemizle = () => {
-    setForm({ Ad: "", Soyad: "", Telefon: "", DogumTarihi: "" });
+    setForm(bosForm);
     setDuzenlenenId(null);
   };
 
@@ -61,6 +63,9 @@ export default function Hastalar() {
       Soyad: h.Soyad,
       Telefon: h.Telefon || "",
       DogumTarihi: h.DogumTarihi ? h.DogumTarihi.split("T")[0] : "",
+      Boy: h.Boy || "",
+      Kilo: h.Kilo || "",
+      KronikRahatsizlik: h.KronikRahatsizlik || "",
     });
   };
 
@@ -116,7 +121,7 @@ export default function Hastalar() {
     <div>
       <h2 className="text-2xl font-semibold mb-6">Hastalar</h2>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-5 mb-6 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow p-5 mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <label className="text-sm text-gray-500">Ad</label>
           <input type="text" name="Ad" value={form.Ad} onChange={handleChange} required className="w-full border rounded-lg px-3 py-2 mt-1" />
@@ -133,7 +138,19 @@ export default function Hastalar() {
           <label className="text-sm text-gray-500">Doğum Tarihi</label>
           <input type="date" name="DogumTarihi" value={form.DogumTarihi} onChange={handleChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
         </div>
-        <div className="flex gap-2">
+        <div>
+          <label className="text-sm text-gray-500">Boy (cm)</label>
+          <input type="number" name="Boy" value={form.Boy} onChange={handleChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
+        </div>
+        <div>
+          <label className="text-sm text-gray-500">Kilo (kg)</label>
+          <input type="number" step="0.1" name="Kilo" value={form.Kilo} onChange={handleChange} className="w-full border rounded-lg px-3 py-2 mt-1" />
+        </div>
+        <div className="md:col-span-2">
+          <label className="text-sm text-gray-500">Kronik Rahatsızlık (varsa)</label>
+          <input type="text" name="KronikRahatsizlik" value={form.KronikRahatsizlik} onChange={handleChange} placeholder="Örn: Diyabet, Hipertansiyon" className="w-full border rounded-lg px-3 py-2 mt-1" />
+        </div>
+        <div className="md:col-span-4 flex gap-2">
           <button type="submit" className="bg-teal-700 text-white rounded-lg px-4 py-2 hover:bg-teal-800 transition">
             {duzenlenenId ? "Güncelle" : "Ekle"}
           </button>
@@ -155,7 +172,7 @@ export default function Hastalar() {
         className="w-full border rounded-lg px-3 py-2 mb-4"
       />
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="bg-white rounded-xl shadow overflow-hidden overflow-x-auto">
         <table className="w-full text-left">
           <thead className="bg-gray-50 text-gray-500 text-sm">
             <tr>
@@ -163,6 +180,8 @@ export default function Hastalar() {
               <th className="p-3">Telefon</th>
               <th className="p-3">Doğum Tarihi</th>
               <th className="p-3">Yaş</th>
+              <th className="p-3">Boy/Kilo</th>
+              <th className="p-3">Kronik Rahatsızlık</th>
               <th className="p-3"></th>
               <th className="p-3"></th>
               <th className="p-3"></th>
@@ -177,6 +196,18 @@ export default function Hastalar() {
                 </td>
                 <td className="p-3">{tarihFormatla(h.DogumTarihi)}</td>
                 <td className="p-3 text-teal-700 text-sm">{yasHesapla(h.DogumTarihi)}</td>
+                <td className="p-3 text-sm">
+                  {h.Boy ? `${h.Boy} cm` : "-"} / {h.Kilo ? `${h.Kilo} kg` : "-"}
+                </td>
+                <td className="p-3 text-sm">
+                  {h.KronikRahatsizlik ? (
+                    <span className="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
+                      {h.KronikRahatsizlik}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 text-xs">Yok</span>
+                  )}
+                </td>
                 <td className="p-3">
                   <Link to={`/hastalar/${h.HastaID}/gecmis`} className="text-teal-700 text-sm hover:underline">
                     Geçmiş →

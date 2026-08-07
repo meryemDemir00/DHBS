@@ -4,6 +4,7 @@ export default function Hekimler() {
   const [hekimler, setHekimler] = useState([]);
   const [form, setForm] = useState({ Ad: "", Soyad: "", Uzmanlik: "" });
   const [mesaj, setMesaj] = useState("");
+  const [duzenlenenId, setDuzenlenenId] = useState(null);
 
   const getir = () => {
     fetch("http://localhost:5000/api/hekimler").then(r => r.json()).then(setHekimler);
@@ -11,16 +12,31 @@ export default function Hekimler() {
 
   useEffect(() => { getir(); }, []);
 
+  const formuTemizle = () => {
+    setForm({ Ad: "", Soyad: "", Uzmanlik: "" });
+    setDuzenlenenId(null);
+  };
+
+  const handleDuzenle = (h) => {
+    setDuzenlenenId(h.HekimID);
+    setForm({ Ad: h.Ad, Soyad: h.Soyad, Uzmanlik: h.Uzmanlik || "" });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:5000/api/hekimler", {
-      method: "POST",
+    const url = duzenlenenId
+      ? `http://localhost:5000/api/hekimler/${duzenlenenId}`
+      : "http://localhost:5000/api/hekimler";
+    const method = duzenlenenId ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
     if (res.ok) {
       setMesaj("");
-      setForm({ Ad: "", Soyad: "", Uzmanlik: "" });
+      formuTemizle();
       getir();
     } else {
       setMesaj(await res.text());
@@ -53,7 +69,16 @@ export default function Hekimler() {
           <label className="text-sm text-gray-500">Uzmanlık</label>
           <input value={form.Uzmanlik} onChange={e => setForm({...form, Uzmanlik: e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1" />
         </div>
-        <button className="bg-teal-700 text-white rounded-lg px-4 py-2 hover:bg-teal-800">Ekle</button>
+        <div className="flex gap-2">
+          <button className="bg-teal-700 text-white rounded-lg px-4 py-2 hover:bg-teal-800">
+            {duzenlenenId ? "Güncelle" : "Ekle"}
+          </button>
+          {duzenlenenId && (
+            <button type="button" onClick={formuTemizle} className="bg-gray-200 text-gray-700 rounded-lg px-4 py-2 hover:bg-gray-300">
+              İptal
+            </button>
+          )}
+        </div>
       </form>
 
       {mesaj && <p className="text-sm text-red-600 mb-4">{mesaj}</p>}
@@ -61,13 +86,18 @@ export default function Hekimler() {
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-50 text-gray-500 text-sm">
-            <tr><th className="p-3">Ad Soyad</th><th className="p-3">Uzmanlık</th><th className="p-3"></th></tr>
+            <tr><th className="p-3">Ad Soyad</th><th className="p-3">Uzmanlık</th><th className="p-3"></th><th className="p-3"></th></tr>
           </thead>
           <tbody>
             {hekimler.map(h => (
               <tr key={h.HekimID} className="border-t">
                 <td className="p-3">{h.Ad} {h.Soyad}</td>
                 <td className="p-3">{h.Uzmanlik}</td>
+                <td className="p-3">
+                  <button onClick={() => handleDuzenle(h)} className="text-blue-600 text-sm hover:underline">
+                    Düzenle
+                  </button>
+                </td>
                 <td className="p-3">
                   <button onClick={() => handleDelete(h.HekimID)} className="text-red-600 text-sm hover:underline">
                     Sil

@@ -5,20 +5,50 @@ export default function HastaGecmis() {
   const { id } = useParams();
   const [gecmis, setGecmis] = useState([]);
   const [hasta, setHasta] = useState(null);
+  const [hekimler, setHekimler] = useState([]);
 
-  useEffect(() => {
+  const gecmisiGetir = () => {
     fetch(`http://localhost:5000/api/hastalar/${id}/gecmis`)
       .then((res) => res.json())
       .then(setGecmis)
       .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    gecmisiGetir();
 
     fetch("http://localhost:5000/api/hastalar")
       .then((res) => res.json())
-      .then((data) => {
-        const bulunan = data.find((h) => h.HastaID === Number(id));
-        setHasta(bulunan);
-      });
+      .then((data) => setHasta(data.find((h) => h.HastaID === Number(id))));
+
+    fetch("http://localhost:5000/api/hekimler")
+      .then((res) => res.json())
+      .then(setHekimler);
   }, [id]);
+
+  const handleTamamlandiIsaretle = async (kayit) => {
+    const hekim = hekimler.find((h) => `${h.Ad} ${h.Soyad}` === kayit.Hekim);
+    if (!hekim) {
+      alert("Hekim bilgisi bulunamadı, güncelleme yapılamadı.");
+      return;
+    }
+    const res = await fetch(`http://localhost:5000/api/tedaviler/${kayit.TedaviID}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        HastaID: Number(id),
+        HekimID: hekim.HekimID,
+        DisNumarasi: kayit.DisNumarasi,
+        TedaviTuru: kayit.TedaviTuru,
+        Durum: "Tamamlandi",
+      }),
+    });
+    if (res.ok) {
+      gecmisiGetir();
+    } else {
+      alert(await res.text());
+    }
+  };
 
   return (
     <div>
@@ -52,9 +82,14 @@ export default function HastaGecmis() {
               <p className="text-sm text-gray-600 mb-1">
                 <span className="font-medium">Diş No:</span> {g.DisNumarasi}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 mb-2">
                 <span className="font-medium">Tedavi:</span> {g.TedaviTuru}
               </p>
+              {g.Durum === "DevamEdiyor" && (
+                <button onClick={() => handleTamamlandiIsaretle(g)} className="text-sm text-teal-700 hover:underline">
+                  ✓ Tamamlandı olarak işaretle
+                </button>
+              )}
             </div>
           ))}
         </div>

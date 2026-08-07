@@ -25,17 +25,43 @@ export default function RandevuTablosu() {
     }
   };
 
+  const durumGuncelle = async (randevu, yeniDurum) => {
+    if (!randevu.HastaID || !randevu.HekimID) {
+      alert("Randevu bilgisi eksik (HastaID/HekimID gelmiyor). Backend'in güncel olduğundan emin olun.");
+      return;
+    }
+    const res = await fetch(`http://localhost:5000/api/randevular/${randevu.RandevuID}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        HastaID: randevu.HastaID,
+        HekimID: randevu.HekimID,
+        Tarih: randevu.Tarih,
+        Durum: yeniDurum,
+      }),
+    });
+    if (res.ok) {
+      getir();
+      setFiltre(yeniDurum);
+    } else {
+      alert(await res.text());
+    }
+  };
+
   const durumRengi = {
     Bekliyor: "bg-yellow-100 text-yellow-700",
+    Onaylandi: "bg-blue-100 text-blue-700",
     Tamamlandi: "bg-green-100 text-green-700",
+    Reddedildi: "bg-red-100 text-red-700",
     IptalEdildi: "bg-red-100 text-red-700",
   };
 
   const sekmeler = [
     { ad: "Hepsi", durum: null },
     { ad: "Bekliyor", durum: "Bekliyor" },
+    { ad: "Onaylandı", durum: "Onaylandi" },
     { ad: "Tamamlandı", durum: "Tamamlandi" },
-    { ad: "İptal", durum: "Iptal Edildi" },
+    { ad: "Reddedildi", durum: "Reddedildi" },
   ];
 
   const sayac = (durum) => {
@@ -66,7 +92,7 @@ export default function RandevuTablosu() {
         {sekmeler.map((s) => {
           const secili = (s.durum || "Hepsi") === filtre;
           return (
-            <button key={s.ad} onClick={() => setFiltre(s.durum || "Hepsi")} className={sekmeSinifi(secili)}>
+            <button key={s.ad} type="button" onClick={() => setFiltre(s.durum || "Hepsi")} className={sekmeSinifi(secili)}>
               {s.ad}
               <span className={rozetSinifi(secili)}>{sayac(s.durum)}</span>
             </button>
@@ -96,9 +122,21 @@ export default function RandevuTablosu() {
                 </span>
               </td>
               <td className="p-3">
-                <button onClick={() => handleDelete(r.RandevuID)} className="text-red-600 text-sm hover:underline">
-                  Sil
-                </button>
+                <div className="flex gap-3 items-center flex-wrap">
+                  {r.Durum === "Bekliyor" && (
+                    <>
+                      <button onClick={() => durumGuncelle(r, "Onaylandi")} className="text-blue-600 text-sm hover:underline">
+                        Onayla
+                      </button>
+                      <button onClick={() => durumGuncelle(r, "Reddedildi")} className="text-orange-600 text-sm hover:underline">
+                        Reddet
+                      </button>
+                    </>
+                  )}
+                  <button onClick={() => handleDelete(r.RandevuID)} className="text-red-600 text-sm hover:underline">
+                    Sil
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

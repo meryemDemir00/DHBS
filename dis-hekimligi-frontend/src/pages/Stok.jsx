@@ -4,6 +4,7 @@ export default function Stok() {
   const [malzemeler, setMalzemeler] = useState([]);
   const [form, setForm] = useState({ MalzemeAdi: "", Miktar: "", KritikSeviye: "" });
   const [mesaj, setMesaj] = useState("");
+  const [duzenlenenId, setDuzenlenenId] = useState(null);
 
   const getir = () => {
     fetch("http://localhost:5000/api/malzemeler").then(r => r.json()).then(setMalzemeler);
@@ -11,16 +12,31 @@ export default function Stok() {
 
   useEffect(() => { getir(); }, []);
 
+  const formuTemizle = () => {
+    setForm({ MalzemeAdi: "", Miktar: "", KritikSeviye: "" });
+    setDuzenlenenId(null);
+  };
+
+  const handleDuzenle = (m) => {
+    setDuzenlenenId(m.MalzemeID);
+    setForm({ MalzemeAdi: m.MalzemeAdi, Miktar: m.Miktar, KritikSeviye: m.KritikSeviye });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:5000/api/malzemeler", {
-      method: "POST",
+    const url = duzenlenenId
+      ? `http://localhost:5000/api/malzemeler/${duzenlenenId}`
+      : "http://localhost:5000/api/malzemeler";
+    const method = duzenlenenId ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
     if (res.ok) {
       setMesaj("");
-      setForm({ MalzemeAdi: "", Miktar: "", KritikSeviye: "" });
+      formuTemizle();
       getir();
     } else {
       setMesaj(await res.text());
@@ -53,7 +69,16 @@ export default function Stok() {
           <label className="text-sm text-gray-500">Kritik Seviye</label>
           <input type="number" value={form.KritikSeviye} onChange={e => setForm({...form, KritikSeviye: e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1" />
         </div>
-        <button className="bg-teal-700 text-white rounded-lg px-4 py-2 hover:bg-teal-800">Ekle</button>
+        <div className="flex gap-2">
+          <button className="bg-teal-700 text-white rounded-lg px-4 py-2 hover:bg-teal-800">
+            {duzenlenenId ? "Güncelle" : "Ekle"}
+          </button>
+          {duzenlenenId && (
+            <button type="button" onClick={formuTemizle} className="bg-gray-200 text-gray-700 rounded-lg px-4 py-2 hover:bg-gray-300">
+              İptal
+            </button>
+          )}
+        </div>
       </form>
 
       {mesaj && <p className="text-sm text-red-600 mb-4">{mesaj}</p>}
@@ -61,7 +86,7 @@ export default function Stok() {
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-50 text-gray-500 text-sm">
-            <tr><th className="p-3">Malzeme Adı</th><th className="p-3">Miktar</th><th className="p-3">Durum</th><th className="p-3"></th></tr>
+            <tr><th className="p-3">Malzeme Adı</th><th className="p-3">Miktar</th><th className="p-3">Durum</th><th className="p-3"></th><th className="p-3"></th></tr>
           </thead>
           <tbody>
             {malzemeler.map(m => (
@@ -72,6 +97,11 @@ export default function Stok() {
                   {m.Miktar <= m.KritikSeviye
                     ? <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">Kritik</span>
                     : <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Yeterli</span>}
+                </td>
+                <td className="p-3">
+                  <button onClick={() => handleDuzenle(m)} className="text-blue-600 text-sm hover:underline">
+                    Düzenle
+                  </button>
                 </td>
                 <td className="p-3">
                   <button onClick={() => handleDelete(m.MalzemeID)} className="text-red-600 text-sm hover:underline">
