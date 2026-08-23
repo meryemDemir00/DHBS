@@ -1,5 +1,16 @@
 import { useState, useEffect } from "react";
 
+function durumGoster(durum) {
+  const esleme = {
+    Bekliyor: "Bekliyor",
+    Onaylandi: "Onaylandı",
+    Tamamlandi: "Tamamlandı",
+    Reddedildi: "Reddedildi",
+    IptalEdildi: "İptal Edildi",
+  };
+  return esleme[durum] || durum;
+}
+
 export default function RandevuTablosu() {
   const [randevular, setRandevular] = useState([]);
   const [filtre, setFiltre] = useState("Hepsi");
@@ -118,7 +129,7 @@ export default function RandevuTablosu() {
               <td className="p-3">{new Date(r.Tarih).toLocaleString("tr-TR")}</td>
               <td className="p-3">
                 <span className={`px-2 py-1 rounded-full text-xs ${durumRengi[r.Durum] || ""}`}>
-                  {r.Durum}
+                  {durumGoster(r.Durum)}
                 </span>
               </td>
               <td className="p-3">

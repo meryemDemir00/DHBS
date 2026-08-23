@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 
+function durumGoster(durum) {
+  const esleme = {
+    DevamEdiyor: "Devam Ediyor",
+    Tamamlandi: "Tamamlandı",
+  };
+  return esleme[durum] || durum;
+}
+
 export default function Tedaviler() {
   const [tedaviler, setTedaviler] = useState([]);
   const [hastalar, setHastalar] = useState([]);
@@ -88,7 +96,7 @@ export default function Tedaviler() {
         <div>
           <label className="text-sm text-gray-500">Durum</label>
           <select value={form.Durum} onChange={e => setForm({...form, Durum: e.target.value})} className="w-full border rounded-lg px-3 py-2 mt-1">
-            <option value="DevamEdiyor">DevamEdiyor</option>
+            <option value="DevamEdiyor">Devam Ediyor</option>
             <option value="Tamamlandi">Tamamlandı</option>
           </select>
         </div>
@@ -114,7 +122,7 @@ export default function Tedaviler() {
                 <td className="p-3">{t.Hasta}</td>
                 <td className="p-3">{t.DisNumarasi}</td>
                 <td className="p-3">{t.TedaviTuru}</td>
-                <td className="p-3">{t.Durum}</td>
+                <td className="p-3">{durumGoster(t.Durum)}</td>
                 <td className="p-3">
                   <button onClick={() => handleDuzenle(t)} className="text-blue-600 text-sm hover:underline">
                     Düzenle
