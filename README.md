@@ -1,3 +1,11 @@
+
+
+
+
+
+
+
+
 # DHBS — Diş Hekimliği Kliniği Yönetim Sistemi
 
 Molekül Yazılım'da yaptığım staj kapsamında geliştirdiğim proje. Şirketin sitesinde gördüğüm "Diş Hekimliği" ürününden yola çıkarak, benzer bir mantıkla küçük ölçekli bir klinik yönetim sistemi kurmaya çalıştım.
@@ -7,9 +15,7 @@ Sistem iki taraftan oluşuyor: klinik personelinin kullandığı bir yönetim pa
 ## Demo
 
 Projenin kısa bir tanıtım videosu:
-
-`demo.mp4` (bu dosyayı repoya yükledikten sonra bu satırı GitHub'ın verdiği video bağlantısıyla değiştir, ya da video dosyasını README düzenleme ekranına sürükle-bırak, GitHub otomatik ekler)
-
+https://github.com/user-attachments/assets/688b4307-be4c-4495-9080-601eacb0b4b6
 ## Neler var
 
 **Yönetim paneli (giriş gerekiyor):**
