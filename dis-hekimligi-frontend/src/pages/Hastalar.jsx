@@ -87,8 +87,9 @@ export default function Hastalar() {
         formuTemizle();
         hastalariGetir();
       } else {
-        setMesaj("Bir hata oluştu.");
-      }
+  const hataMetni = await res.text();
+  setMesaj(hataMetni);
+}
     } catch (err) {
       setMesaj("Bağlantı hatası: " + err.message);
     }

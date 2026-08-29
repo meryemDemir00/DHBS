@@ -34,6 +34,16 @@ app.post("/api/hastalar", async (req, res) => {
   try {
     const { Ad, Soyad, Telefon, DogumTarihi, Boy, Kilo, KronikRahatsizlik } = req.body;
     const pool = await sql.connect(dbConfig);
+
+    const kontrol = await pool.request()
+      .input("Ad", sql.NVarChar, Ad)
+      .input("Soyad", sql.NVarChar, Soyad)
+      .query("SELECT COUNT(*) AS adet FROM Hasta WHERE Ad = @Ad AND Soyad = @Soyad");
+
+    if (kontrol.recordset[0].adet > 0) {
+      return res.status(409).send("Bu isimde bir hasta zaten kayıtlı.");
+    }
+
     await pool.request()
       .input("Ad", sql.NVarChar, Ad)
       .input("Soyad", sql.NVarChar, Soyad)
