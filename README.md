@@ -8,7 +8,7 @@
 
 # DHBS — Diş Hekimliği Kliniği Yönetim Sistemi
 
-Molekül Yazılım'da yaptığım staj kapsamında geliştirdiğim proje. Şirketin sitesinde gördüğüm "Diş Hekimliği" ürününden yola çıkarak, benzer bir mantıkla küçük ölçekli bir klinik yönetim sistemi kurmaya çalıştım.
+Molekül Yazılım'da yaptığım staj kapsamında geliştirilmiş bir projedir. Şirketin sitesinde görülen "Diş Hekimliği" ürününden yola çıkarak, benzer bir mantıkla küçük ölçekli bir klinik yönetim sistemi kurmaya çalışıldı.
 
 Sistem iki taraftan oluşuyor: klinik personelinin kullandığı bir yönetim paneli, bir de hastaların giriş yapmadan online randevu talep edebildiği açık bir form.
 
@@ -31,7 +31,7 @@ https://github.com/user-attachments/assets/688b4307-be4c-4495-9080-601eacb0b4b6
 - 09:00-15:00 arası, 30 dakikalık dilimlerden saat seçilebiliyor
 - Aynı hekime aynı saatte iki randevu alınmasını engelleyen bir kontrol var
 
-## Kullandığım teknolojiler
+## Kullanılan teknolojiler
 
 - **Frontend:** React (Vite ile kuruldu), Tailwind CSS, React Router
 - **Backend:** Node.js + Express
@@ -40,7 +40,7 @@ https://github.com/user-attachments/assets/688b4307-be4c-4495-9080-601eacb0b4b6
 
 ## Veritabanı
 
-7 tablo var, aralarındaki ilişkiler şöyle:
+7 tablo var, aralarındaki ilişkiler şu şekilde:
 
 ```mermaid
 erDiagram
@@ -106,11 +106,11 @@ erDiagram
     }
 ```
 
-`Tedavi_Malzeme` ara tablo — bir tedavide birden fazla malzeme kullanılabiliyor, bir malzeme de birden fazla tedavide geçebiliyor (çoktan çoğa ilişki). Bir tedaviye malzeme eklendiğinde, o malzemenin stok miktarını otomatik düşüren bir trigger yazdım (`trg_StokAzalt`).
+`Tedavi_Malzeme` ara tablo — bir tedavide birden fazla malzeme kullanılabiliyor, bir malzeme de birden fazla tedavide geçebiliyor (çoktan çoğa ilişki). Bir tedaviye malzeme eklendiğinde, o malzemenin stok miktarını otomatik düşüren bir trigger yazıldı (`trg_StokAzalt`).
 
 ## Nasıl çalıştırılır
 
-Önce SQL Server tarafında `DisHekimligiDB` veritabanını ve tabloları oluşturman lazım (script `database/schema.sql` içinde).
+Önce SQL Server tarafında `DisHekimligiDB` veritabanını ve tablolar oluşturulmalı (script `database/schema.sql` içinde).
 
 Backend için:
 ```
@@ -126,7 +126,7 @@ cd dis-hekimligi-frontend
 npm install
 npm run dev
 ```
-5173 portunda açılıyor, tarayıcıdan oraya gidince görebilirsin.
+5173 portunda açılıyor, tarayıcıdan oraya gidince görülür.
 
 Admin girişi: `admin` / `admin123`
 Hasta randevu formu: `/randevu-al` yoluna giriş yapmadan da ulaşılabiliyor.
@@ -160,6 +160,6 @@ Bunların dışında:
 
 ## Notlar
 
-Bu bir staj projesi, gerçek bir hastanede kullanılacak seviyede değil — örneğin şifreler düz metin olarak tutuluyor, kimlik doğrulama basit tutuldu. Amaç, VTYS dersinde öğrendiğim veritabanı tasarımını (ilişkisel tablo yapısı, tetikleyiciler, çoktan-çoğa ilişkiler) ve React/Node.js ile öğrendiğim full-stack geliştirmeyi bir arada, gerçekçi bir senaryo üzerinde uygulamaktı.
+Bu bir staj projesi, gerçek bir hastanede kullanılacak seviyede değil , örneğin şifreler düz metin olarak tutuluyor, kimlik doğrulama basit tutuldu. Amaç, VTYS dersinde öğrenilen veritabanı tasarımını (ilişkisel tablo yapısı, tetikleyiciler, çoktan-çoğa ilişkiler) ve React/Node.js ile öğrenilen full-stack geliştirmeyi bir arada, gerçekçi bir senaryo üzerinde uygulamak.
 
 — Meryem Demir
